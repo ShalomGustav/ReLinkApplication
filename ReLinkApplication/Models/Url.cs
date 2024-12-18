@@ -7,11 +7,9 @@ namespace ReLinkApplication.Models
         [Key]
         public Guid Id { get; set; }
 
-        [Required] 
         [Url] 
         public string LongUrl { get; set; }
 
-        [Required]
         public string ShortUrl { get; set; }    
     }
 }

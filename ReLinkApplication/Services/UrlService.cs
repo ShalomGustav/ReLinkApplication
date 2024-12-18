@@ -7,50 +7,41 @@ namespace ReLinkApplication.Services;
 public class UrlService
 {
     private readonly UrlDbContext _dbContext;
-    private readonly string _defaultUrl = "https://relink.ms/";
+    private readonly string _baseUrl;
     const string AllowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-    public UrlService(UrlDbContext context)
+    public UrlService(UrlDbContext context, IConfiguration configuration)
     {
         _dbContext = context;
+        _baseUrl = configuration["ApplicationSettings:BaseUrl"];
     }
 
-    public async Task<Url> GetByUrlAsync(string url)
+    public async Task<string> CreateShortUrlAsync(string longUrl)
     {
-        if (string.IsNullOrWhiteSpace(url))
+        if(string.IsNullOrEmpty(longUrl))
         {
             throw new ArgumentNullException("URL cannot be null or empty.");
         }
 
-        var result = await _dbContext.Url.FirstOrDefaultAsync(x => x.LongUrl == url);
-
-        if(result == null)
-        {
-            throw new ArgumentNullException("The specified URL does not exist.");
-        }
-
-        return result;
-    }
-
-    public async Task<Url> CreateShortUrlAsync(string longUrl)
-    {
-        var existingUrl = await GetByUrlAsync(longUrl);
+        var existingUrl = await _dbContext.Url.FirstOrDefaultAsync(x => x.LongUrl == longUrl);
 
         if(existingUrl != null)
         {
-            return existingUrl;
+            return existingUrl.ShortUrl;
         }
 
-        var newUrl = new Url
+        var shortCode = await CreateUniqueShortUrlAsync();
+
+        var url = new Url
         {
             LongUrl = longUrl,
-            ShortUrl = await CreateUniqueShortUrlAsync()
+            ShortUrl = $"{_baseUrl}/{shortCode}"
         };
 
-        await _dbContext.AddAsync(newUrl);
+        await _dbContext.AddAsync(url);
         await _dbContext.SaveChangesAsync();
 
-        return newUrl;
+        return url.ShortUrl;
     }
 
     public async Task<string> GetLongUrlByShortUrlAsync(string shortUrl)
@@ -60,7 +51,7 @@ public class UrlService
             throw new ArgumentNullException(nameof(shortUrl), "Short URL cannot be null or empty.");
         }
 
-        var url = await GetByUrlAsync(shortUrl);
+        var url = await _dbContext.Url.FirstOrDefaultAsync(x => x.ShortUrl == shortUrl);
 
         if (url == null)
         {
@@ -72,10 +63,10 @@ public class UrlService
 
     private async Task<string> CreateUniqueShortUrlAsync()
     {
-        var shortUrl = _defaultUrl + new string(Enumerable.Range(0, 6)
+        var shortUrl = new string(Enumerable.Range(0, 6)
             .Select(_ => AllowedChars[new Random().Next(AllowedChars.Length)]).ToArray());
 
-        var exist = await _dbContext.Url.AnyAsync(x => x.ShortUrl == shortUrl);
+        var exist = await _dbContext.Url.AnyAsync(x => x.ShortUrl == _baseUrl + shortUrl);
         
         if (!exist)
         {
