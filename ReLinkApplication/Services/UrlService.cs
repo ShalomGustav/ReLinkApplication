@@ -8,7 +8,6 @@ public class UrlService
 {
     private readonly UrlDbContext _dbContext;
     private readonly string _defaultUrl = "https://relink.ms/";
-    private readonly Random _randomGenerator = new Random();
     const string AllowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
     public UrlService(UrlDbContext context)
@@ -74,7 +73,7 @@ public class UrlService
     private async Task<string> CreateUniqueShortUrlAsync()
     {
         var shortUrl = _defaultUrl + new string(Enumerable.Range(0, 6)
-            .Select(_ => AllowedChars[_randomGenerator.Next(AllowedChars.Length)]).ToArray());
+            .Select(_ => AllowedChars[new Random().Next(AllowedChars.Length)]).ToArray());
 
         var exist = await _dbContext.Url.AnyAsync(x => x.ShortUrl == shortUrl);
         
