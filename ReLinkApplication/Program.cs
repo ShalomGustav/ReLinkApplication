@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using ReLinkApplication.Repositories;
 using ReLinkApplication.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +13,9 @@ builder.Services.AddSwaggerGen();
 
 
 builder.Services.AddScoped<UrlService>();
+builder.Services.AddDbContext<UrlDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 
 var app = builder.Build();
 

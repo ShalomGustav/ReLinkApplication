@@ -6,62 +6,64 @@ namespace ReLinkApplication.Services;
 
 public class UrlService
 {
-    private readonly UrlDbContext _dBContext;
+    private readonly UrlDbContext _dbContext;
     private readonly string _defaultUrl = "https://relink.ms/";
-    private readonly HashSet<string> _hashShortUrl;
-    private readonly HashSet<string> _hashLongUrl;
-    const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    private readonly HashSet<string> _shortUrlCache;
+    private readonly HashSet<string> _longUrlCache;
+    private readonly Random _randomGenerator = new Random();
+    const string AllowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
     public UrlService(UrlDbContext context)
     {
-        _dBContext = context;
-        _hashShortUrl = new HashSet<string>(_dBContext.Url.Select(x => x.ShortUrl).ToList());
-        _hashLongUrl = new HashSet<string>(_dBContext.Url.Select(x => x.LongUrl).ToList());
+        _dbContext = context;
+        _shortUrlCache = new HashSet<string>(_dbContext.Url.Select(x => x.ShortUrl).ToList());
+        _longUrlCache = new HashSet<string>(_dbContext.Url.Select(x => x.LongUrl).ToList());
     }
 
     public async Task<List<Url>> GetAllUrlAsync()
     {
-        var result = await _dBContext.Url.ToListAsync();
-
-        return result;
+        return await _dbContext.Url.ToListAsync();
     }
 
-    public async Task<Url> GetUrlById(Guid id)
+    public async Task<Url?> GetUrlById(Guid id)
     {
         if(id == Guid.Empty)
         {
-            throw new ArgumentNullException("Guid can not be null or empty.");
+            throw new ArgumentNullException("ID cannot be null or empty.");
         }
 
-        var url = await _dBContext.Url.FirstOrDefaultAsync(x => x.Id == id);
-
-        return url;
+        return await _dbContext.Url.FirstOrDefaultAsync(x => x.Id == id);
     }
 
-    public async Task<Url?> GetByLongUrlAsync(string longUrl)
+    public async Task<Url> GetByLongUrlAsync(string longUrl)
     {
         if (string.IsNullOrWhiteSpace(longUrl))
         {
             throw new ArgumentNullException(nameof(longUrl), "The URL cannot be null or empty.");
         }
 
-        var result = await _dBContext.Url.FirstOrDefaultAsync(x => x.LongUrl == longUrl);
+        var result = await _dbContext.Url.FirstOrDefaultAsync(x => x.LongUrl == longUrl);
+
+        if(result == null)
+        {
+            throw new ArgumentNullException("The specified URL does not exist.");
+        }
 
         return result;
     }
 
-    public async Task<Url> CreateByLongUrlAsync(string longUrl)
+    public async Task<Url> CreateUpdateByLongUrlAsync(string longUrl)
     {
         if (string.IsNullOrEmpty(longUrl))
         {
-            throw new ArgumentNullException("Url not can be is null. ");
+            throw new ArgumentNullException("URL cannot be null or empty.");
         }
 
-        var existLongUrl = await GetByLongUrlAsync(longUrl);
+        var existingUrl = await GetByLongUrlAsync(longUrl);
 
-        if(existLongUrl != null)
+        if(existingUrl != null)
         {
-            return existLongUrl;
+            return existingUrl;
         }
 
         var newUrl = new Url
@@ -70,61 +72,60 @@ public class UrlService
             ShortUrl = await CreateUniqueShortUrlAsync()
         };
 
-        await _dBContext.AddAsync(newUrl);
-        await _dBContext.SaveChangesAsync();
+        await _dbContext.AddAsync(newUrl);
+        await _dbContext.SaveChangesAsync();
 
-        _hashLongUrl.Add(newUrl.LongUrl);
-        _hashShortUrl.Add(newUrl.ShortUrl);
+        UpdateHashSet(newUrl);
 
         return newUrl;
     }
 
-    public async Task<Url> UpdateByLongUrlAsync(string longUrl)
+    public async Task<bool> DeleteByLongUrlAsync(string longUrl)
     {
         if (string.IsNullOrEmpty(longUrl))
         {
-            throw new ArgumentNullException("Url not can be is null. ");
+            throw new ArgumentNullException("URL cannot be null or empty.");
         }
 
-        var existLongUrl = await GetByLongUrlAsync(longUrl);
+        var existingUrl = await GetByLongUrlAsync(longUrl);
 
-        if (existLongUrl == null)
+        if (existingUrl == null)
         {
-            throw new ArgumentNullException("Url is not exist");
+            return false;
         }
 
-        var newUrl = new Url
-        {
-            LongUrl = longUrl,
-            ShortUrl = await CreateUniqueShortUrlAsync()
-        };
+        _dbContext.Url.Remove(existingUrl);
+        await _dbContext.SaveChangesAsync();
 
-        await _dBContext.AddAsync(newUrl);
-        await _dBContext.SaveChangesAsync();
+        DeleteFromHashSet(existingUrl);
 
-        _hashLongUrl.Add(newUrl.LongUrl);
-        _hashShortUrl.Add(newUrl.ShortUrl);
-
-        return newUrl;
+        return true;
     }
-
-    public Task<bool>
 
     private async Task<string> CreateUniqueShortUrlAsync()
     {
-        var random = new Random();
-        string shortUrl;
+        var shortUrl = _defaultUrl + new string(Enumerable.Range(0, 6)
+            .Select(_ => AllowedChars[_randomGenerator.Next(AllowedChars.Length)]).ToArray());
 
-        do
+        var exist = await _dbContext.Url.AnyAsync(x => x.ShortUrl == shortUrl);
+        
+        if (!exist)
         {
-            shortUrl = new string(Enumerable.Repeat(chars, 6)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
+            return shortUrl;
+        }
 
-            shortUrl = _defaultUrl + shortUrl;
+        return await CreateUniqueShortUrlAsync();
+    }
 
-        } while (await _dBContext.Url.AnyAsync(x => x.ShortUrl == shortUrl));
-        //_hashLongUrl.Contains(shortUrl)
+    private void UpdateHashSet(Url url)
+    {
+        _longUrlCache.Add(url.LongUrl);
+        _shortUrlCache.Add(url.ShortUrl);
+    }
 
-        return shortUrl;
+    private void DeleteFromHashSet(Url url)
+    {
+        _longUrlCache.Remove(url.LongUrl);
+        _shortUrlCache.Remove(url.ShortUrl);
     }
 }
