@@ -1,15 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿namespace ReLinkApplication.Models;
 
-namespace ReLinkApplication.Models
+public class Url
 {
-    public class Url
-    {
-        [Key]
-        public Guid Id { get; set; }
+    public Guid Id { get; set; }
 
-        [Url] 
-        public string LongUrl { get; set; }
+    public string LongUrl { get; set; }
 
-        public string ShortUrl { get; set; }    
-    }
+    public string ShortUrl { get; set; }    
 }

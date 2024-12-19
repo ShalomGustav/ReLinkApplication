@@ -19,7 +19,7 @@ public class UrlControllers : ControllerBase
     {
         var shortUrl = await _urlService.CreateShortUrlAsync(longUrl);
 
-        return Ok(new {shortUrl});
+        return Ok(shortUrl);
     }
 
     [HttpGet("redirect")]
@@ -27,14 +27,7 @@ public class UrlControllers : ControllerBase
     {
         var decodedShortUrl = Uri.UnescapeDataString(shortUrl);
 
-        try
-        {
-            var longUrl = await _urlService.GetLongUrlByShortUrlAsync(decodedShortUrl);
-            return Redirect(longUrl);
-        }
-        catch(KeyNotFoundException)
-        {
-            return NotFound("Short URL not found");
-        }
+        var longUrl = await _urlService.GetLongUrlByShortUrlAsync(decodedShortUrl);
+        return Redirect(longUrl);
     }
 }

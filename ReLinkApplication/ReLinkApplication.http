@@ -1,4 +1,5 @@
-@ReLinkApplication_HostAddress = http://localhost:5195
+@ReLinkApplication_HostAddress = https://localhost:7065
+
 
 GET {{ReLinkApplication_HostAddress}}/weatherforecast/
 Accept: application/json

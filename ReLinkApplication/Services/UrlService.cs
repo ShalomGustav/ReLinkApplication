@@ -16,34 +16,6 @@ public class UrlService
         _baseUrl = configuration["ApplicationSettings:BaseUrl"];
     }
 
-    public async Task<string> CreateShortUrlAsync(string longUrl)
-    {
-        if(string.IsNullOrEmpty(longUrl))
-        {
-            throw new ArgumentNullException("URL cannot be null or empty.");
-        }
-
-        var existingUrl = await _dbContext.Url.FirstOrDefaultAsync(x => x.LongUrl == longUrl);
-
-        if(existingUrl != null)
-        {
-            return existingUrl.ShortUrl;
-        }
-
-        var shortCode = await CreateUniqueShortUrlAsync();
-
-        var url = new Url
-        {
-            LongUrl = longUrl,
-            ShortUrl = $"{_baseUrl}/{shortCode}"
-        };
-
-        await _dbContext.AddAsync(url);
-        await _dbContext.SaveChangesAsync();
-
-        return url.ShortUrl;
-    }
-
     public async Task<string> GetLongUrlByShortUrlAsync(string shortUrl)
     {
         if (string.IsNullOrWhiteSpace(shortUrl))
@@ -61,16 +33,44 @@ public class UrlService
         return url.LongUrl;
     }
 
+    public async Task<string> CreateShortUrlAsync(string longUrl)
+    {
+        if(string.IsNullOrEmpty(longUrl))
+        {
+            throw new ArgumentNullException("URL cannot be null or empty.");
+        }
+
+        var existingUrl = await _dbContext.Url.FirstOrDefaultAsync(x => x.LongUrl == longUrl);
+
+        if(existingUrl != null)
+        {
+            return existingUrl.ShortUrl;
+        }
+
+        var shortUrl = await CreateUniqueShortUrlAsync();
+
+        var url = new Url
+        {
+            LongUrl = longUrl,
+            ShortUrl = shortUrl
+        };
+
+        await _dbContext.AddAsync(url);
+        await _dbContext.SaveChangesAsync();
+
+        return shortUrl;
+    }
+
     private async Task<string> CreateUniqueShortUrlAsync()
     {
-        var shortUrl = new string(Enumerable.Range(0, 6)
+        var shortCode = new string(Enumerable.Range(0, 6)
             .Select(_ => AllowedChars[new Random().Next(AllowedChars.Length)]).ToArray());
 
-        var exist = await _dbContext.Url.AnyAsync(x => x.ShortUrl == _baseUrl + shortUrl);
+        var exist = await _dbContext.Url.AnyAsync(x => x.ShortUrl == _baseUrl + shortCode);
         
         if (!exist)
         {
-            return shortUrl;
+            return _baseUrl + shortCode;
         }
 
         return await CreateUniqueShortUrlAsync();
