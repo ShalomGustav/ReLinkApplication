@@ -35,14 +35,14 @@ public class UrlService
 
     public async Task<string> CreateShortUrlAsync(string longUrl)
     {
-        if(string.IsNullOrEmpty(longUrl))
+        if (string.IsNullOrEmpty(longUrl))
         {
             throw new ArgumentNullException("URL cannot be null or empty.");
         }
 
         var existingUrl = await _dbContext.Url.FirstOrDefaultAsync(x => x.LongUrl == longUrl);
 
-        if(existingUrl != null)
+        if (existingUrl != null)
         {
             return existingUrl.ShortUrl;
         }
@@ -55,7 +55,7 @@ public class UrlService
             ShortUrl = shortUrl
         };
 
-        await _dbContext.AddAsync(url);
+        _dbContext.Url.Add(url);
         await _dbContext.SaveChangesAsync();
 
         return shortUrl;

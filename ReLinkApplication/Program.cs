@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using ReLinkApplication.Middleware;
 using ReLinkApplication.Repositories;
+using ReLinkApplication.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,22 +12,12 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<UrlDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddScoped<UrlService>();
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
-});
+builder.Services.AddScoped<UrlService>();
 
 var app = builder.Build();
 
-
-app.UseCors("AllowAll");
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

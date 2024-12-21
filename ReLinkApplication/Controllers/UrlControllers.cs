@@ -3,7 +3,6 @@ using ReLinkApplication.Services;
 
 namespace ReLinkApplication.Controllers;
 
-[Route("api/[controller]")]
 [ApiController]
 public class UrlControllers : ControllerBase
 {
@@ -17,17 +16,21 @@ public class UrlControllers : ControllerBase
     [HttpPost("create")]
     public async Task<IActionResult> CreateShortUrlAsync([FromBody] string longUrl)
     {
+        if (string.IsNullOrWhiteSpace(longUrl))
+        {
+            throw new ArgumentNullException(nameof(longUrl));
+        }
+
         var shortUrl = await _urlService.CreateShortUrlAsync(longUrl);
 
-        return Ok(shortUrl);
+        return Ok(new {shortUrl});
     }
 
-    [HttpGet("redirect")]
-    public async Task<IActionResult> RedirectToLongUrlAsync([FromQuery] string shortUrl)
+    [HttpGet("{shortUrl}")]
+    public async Task<IActionResult> RedirectToLongUrlAsync(string shortUrl)
     {
-        var decodedShortUrl = Uri.UnescapeDataString(shortUrl);
+        var longUrl = await _urlService.GetLongUrlByShortUrlAsync(Uri.UnescapeDataString(shortUrl));
 
-        var longUrl = await _urlService.GetLongUrlByShortUrlAsync(decodedShortUrl);
-        return Redirect(longUrl);
+        return RedirectToRoute(longUrl);
     }
 }
