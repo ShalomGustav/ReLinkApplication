@@ -7,23 +7,28 @@ namespace ReLinkApplication.Controllers;
 public class UrlControllers : ControllerBase
 {
     private readonly UrlService _urlService;
+    private readonly string _baseUrl;
+    private const string _protocol = "http://";
 
-    public UrlControllers(UrlService urlService)
+    public UrlControllers(UrlService urlService, IConfiguration configuration)
     {
         _urlService = urlService;
+        _baseUrl = configuration["ApplicationSettings:BaseUrl"];
     }
 
     [HttpPost("create")]
     public async Task<IActionResult> CreateShortUrlAsync([FromBody] string longUrl)
     {
-        if (string.IsNullOrWhiteSpace(longUrl))
+        var code = await _urlService.CreateShortUrlAsync(longUrl);
+
+        if (string.IsNullOrEmpty(code))
         {
-            throw new ArgumentNullException(nameof(longUrl));
+            throw new NullReferenceException("URL not exist");
         }
 
-        var shortUrl = await _urlService.CreateShortUrlAsync(longUrl);
+        var shortUrl = _baseUrl + code;
 
-        return Ok(new {shortUrl});
+        return Ok(new { shortUrl });
     }
 
     [HttpGet("{shortUrl}")]
@@ -31,6 +36,13 @@ public class UrlControllers : ControllerBase
     {
         var longUrl = await _urlService.GetLongUrlByShortUrlAsync(Uri.UnescapeDataString(shortUrl));
 
-        return RedirectToRoute(longUrl);
+        if (!Uri.IsWellFormedUriString(longUrl, UriKind.Absolute))
+        {
+            longUrl = _protocol + longUrl;
+        }
+
+        return Redirect(longUrl);
     }
+
+    
 }

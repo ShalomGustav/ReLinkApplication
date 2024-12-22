@@ -30,14 +30,14 @@ public class ErrorHandlingMiddleware
 
         var statusCode = exception switch
         {
-            KeyNotFoundException => StatusCodes.Status404NotFound, // Ссылка не найдена
-            ArgumentNullException => StatusCodes.Status400BadRequest, // Некорректные данные
-            InvalidOperationException => StatusCodes.Status400BadRequest, // Ошибка бизнес-логики
-            FormatException => StatusCodes.Status400BadRequest, // Некорректный формат
-            UnauthorizedAccessException => StatusCodes.Status401Unauthorized, // Не авторизован
-            DbUpdateException => StatusCodes.Status500InternalServerError, // Ошибка базы данных
-            NotImplementedException => StatusCodes.Status501NotImplemented, // Функциональность отсутствует
-            _ => StatusCodes.Status500InternalServerError // Неизвестная ошибка
+            KeyNotFoundException => StatusCodes.Status404NotFound, 
+            ArgumentNullException => StatusCodes.Status400BadRequest, 
+            InvalidOperationException => StatusCodes.Status400BadRequest, 
+            FormatException => StatusCodes.Status400BadRequest, 
+            UnauthorizedAccessException => StatusCodes.Status401Unauthorized, 
+            DbUpdateException => StatusCodes.Status500InternalServerError, 
+            NotImplementedException => StatusCodes.Status501NotImplemented, 
+            _ => StatusCodes.Status500InternalServerError 
         };
 
         context.Response.StatusCode = statusCode;
