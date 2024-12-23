@@ -4,12 +4,12 @@ using ReLinkApplication.Repositories;
 
 namespace ReLinkApplication.Services;
 
-public class UrlService
+public class UrlServices
 {
     private readonly UrlDbContext _dbContext;
     const string AllowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-    public UrlService(UrlDbContext context)
+    public UrlServices(UrlDbContext context)
     {
         _dbContext = context;
     }
@@ -28,7 +28,9 @@ public class UrlService
             throw new KeyNotFoundException("Short URL not found.");
         }
 
-        return url.LongUrl;
+        var longUrl = url.LongUrl;
+
+        return longUrl;
     }
 
     public async Task<string> CreateShortUrlAsync(string longUrl)
@@ -62,7 +64,7 @@ public class UrlService
     private async Task<string> CreateUniqueShortUrlAsync()
     {
         var shortCode = new string(Enumerable.Range(0, 6)
-            .Select(x => AllowedChars[new Random().Next(AllowedChars.Length)]).ToArray());
+            .Select(_ => AllowedChars[new Random().Next(AllowedChars.Length)]).ToArray());
 
         var exist = await _dbContext.Url.AnyAsync(x => x.ShortUrl == shortCode);
         

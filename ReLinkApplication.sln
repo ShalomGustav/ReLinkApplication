@@ -5,6 +5,8 @@ VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReLinkApplication", "ReLinkApplication\ReLinkApplication.csproj", "{151160AA-D6C0-4EFB-AC20-D82E951CAB3F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReLinkApplication.Tests", "ReLinkApplication.Tests\ReLinkApplication.Tests.csproj", "{69BF43CE-4930-4C5E-A094-DFE8E4D9D34D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{151160AA-D6C0-4EFB-AC20-D82E951CAB3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{151160AA-D6C0-4EFB-AC20-D82E951CAB3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{151160AA-D6C0-4EFB-AC20-D82E951CAB3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69BF43CE-4930-4C5E-A094-DFE8E4D9D34D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69BF43CE-4930-4C5E-A094-DFE8E4D9D34D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69BF43CE-4930-4C5E-A094-DFE8E4D9D34D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69BF43CE-4930-4C5E-A094-DFE8E4D9D34D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
