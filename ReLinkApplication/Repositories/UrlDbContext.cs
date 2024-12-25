@@ -5,7 +5,7 @@ namespace ReLinkApplication.Repositories;
 
 public class UrlDbContext : DbContext
 {
-    public DbSet<Url> Url { get; set; }
+    public virtual DbSet<Url> Url { get; set; }
 
     public UrlDbContext()
     {

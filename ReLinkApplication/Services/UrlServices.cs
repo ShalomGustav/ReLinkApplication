@@ -16,9 +16,9 @@ public class UrlServices
 
     public async Task<string> GetLongUrlByShortUrlAsync(string shortUrl)
     {
-        if (string.IsNullOrWhiteSpace(shortUrl))
+        if (string.IsNullOrEmpty(shortUrl))
         {
-            throw new ArgumentNullException(nameof(shortUrl), "Short URL cannot be null or empty.");
+            throw new ArgumentNullException("URL cannot be null or empty.");
         }
 
         var url = await _dbContext.Url.FirstOrDefaultAsync(x => x.ShortUrl == shortUrl);
