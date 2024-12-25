@@ -5,16 +5,16 @@
 
 ## Описание
 
-ReLinkApplication — это RESTful API, разработанное на платформе .NET 8.0, для работы с URL. Приложение предоставляет два основных функционала:
-1. Создание короткого URL на основе длинного.
-2. Преобразование короткого URL обратно в длинный.
+ReLinkApplication — это `REST API`, разработанное на платформе `.NET 8.0`, для работы с `URL`. Приложение предоставляет два основных функционала:
+1. Создание короткого `URL` на основе длинного.
+2. Преобразование короткого `URL` обратно в длинный.
 
 ## Функционал
 
 - **Middleware**: Обработка ошибок через пользовательский компонент.
 - **Entity Framework Core**: ORM для работы с базой данных.
 - **Swagger**: Генерация документации и тестирование API.
-- **Validation**: Валидация URL с использованием регулярных выражений.
+- **Validation**: Валидация `URL` с использованием регулярных выражений.
 
 ## Содержание
 - [Требования](#требования)
@@ -32,7 +32,7 @@ ReLinkApplication — это RESTful API, разработанное на пла
 ## Требования
 
 - .NET 8.0 SDK или выше.
-- Microsoft SQL Server.
+- Microsoft SQL Server. **Выбор обусловлен тем, что это мини-проект, для моих задач  функционал MS SQL, более чем достаточен**.  
 - Среда разработки: Visual Studio 2022 / Rider / VS Code.
 
 ---
@@ -79,10 +79,10 @@ ReLinkApplication — это RESTful API, разработанное на пла
     }
   },
   "ConnectionStrings": {
-    "DefaultConnection": "Server=(localdb)\MSSQLLocalDB;Database=ReLinkDb;Trusted_Connection=True;"
+    "DefaultConnection": "Server=localhost;Database=ReLinkDb;Trusted_Connection=True;TrustServerCertificate=True;"
   },
   "ApplicationSettings": {
-    "BaseUrl": "http://localhost:5000/"
+    "BaseUrl": "http://localhost:7065/"
   },
   "AllowedHosts": "*"
 }
@@ -130,7 +130,8 @@ ReLinkApplication — это RESTful API, разработанное на пла
    ```bash
    dotnet test
    ```
-
+3. Если в качестве среды программирования используется Visual Studio, то запуск тестов можно упростить, нажав `Test` -> `Run All Tests`.
+   
 Тесты покрывают логику генерации коротких URL и получения оригинальных ссылок.
 
 ---
