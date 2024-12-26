@@ -29,7 +29,7 @@ public class UrlControllers : ControllerBase
 
         if (string.IsNullOrEmpty(code))
         {
-            throw new NullReferenceException("URL can not be null or empty");
+            throw new InvalidOperationException("The short link could not be generated.");
         }
 
         var shortUrl = _baseUrl + code;

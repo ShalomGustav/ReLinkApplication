@@ -1,6 +1,4 @@
-using Moq;
-using Moq.EntityFrameworkCore;
-using ReLinkApplication.Models;
+using Microsoft.EntityFrameworkCore;
 using ReLinkApplication.Repositories;
 using ReLinkApplication.Services;
 
@@ -8,63 +6,32 @@ namespace ReLinkApplication.Tests;
 
 public class UrlServicesTests
 {
-    private readonly Mock<UrlDbContext> _mockDbContext;
-    private readonly UrlServices _urlServices;
-    public UrlServicesTests()
-    {
-        _mockDbContext = new Mock<UrlDbContext>();
-        _urlServices = new UrlServices(_mockDbContext.Object);
-    }
-
-    #region Tests
-    [Fact]
-    public async Task GetLongUrlByShortUrlAsyncTests()
-    {
-        // Arrange
-        var url = GetUrl();
-        var longUrl = url.First().LongUrl;
-        var shortUrl = url.First().ShortUrl;
-
-        _mockDbContext.Setup(x => x.Url).ReturnsDbSet(url);
-
-        // Act
-        var result = await _urlServices.GetLongUrlByShortUrlAsync(shortUrl);
-
-
-        // Assert
-        Assert.Equal(longUrl, result);
-    }
 
     [Fact]
-    public async Task CreateShortUrlAsyncTests()
+    public async Task CreateShortLongUrl()
     {
-        // Arrange
-        var url = GetUrl();
-        var longUrl = url.First().LongUrl;
-        var shortUrl = url.First().ShortUrl;
+        //Arrange
+        using var dbContext = CreateInMemoryDbContext();
+        var urlService = new UrlServices(dbContext);
 
-        _mockDbContext.Setup(x => x.Url).ReturnsDbSet(url);
+        var longUrl = "http://test.url.ru";
 
-        // Act
-        var result = await _urlServices.CreateShortUrlAsync(longUrl);
+        //Act
+        var shortUrl = await urlService.CreateShortUrlAsync(longUrl);    
+        var retrievedlongUrl = await urlService.GetLongUrlByShortUrlAsync(shortUrl);
 
-        // Assert
-        Assert.Equal(shortUrl, result);
+        //Assert
+        Assert.NotNull(shortUrl);
+        Assert.Equal(longUrl, retrievedlongUrl);
     }
-    #endregion
 
-    #region Helpers
-    private List<Url> GetUrl()
+    private UrlDbContext CreateInMemoryDbContext()
     {
-        var longUrl = "http://create_short_url_async_tests.ru";
-        var shortUrl = "qwerty";
+        var dbContext = new DbContextOptionsBuilder<UrlDbContext>()
+            .UseInMemoryDatabase(databaseName: "RelinkTestDb")
+            .Options;
 
-        var url = new List<Url>
-        {
-            new Url { ShortUrl = shortUrl, LongUrl = longUrl }
-        };
-
-        return url;
+        return new UrlDbContext(dbContext);
     }
-    #endregion
 }
+
